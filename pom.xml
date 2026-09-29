@@ -22,7 +22,7 @@
         <!-- Overridden to match what is cached in this environment's local .m2
              (Boot 3.3.4 manages flyway 10.10.0 / postgresql 42.7.4, neither cached here). -->
         <flyway.version>11.7.2</flyway.version>
-        <postgresql.version>42.7.9</postgresql.version>
+        <postgresql.version>42.7.12</postgresql.version>
         <!-- springdoc is not part of the Spring Boot BOM, so its version is set explicitly. -->
         <springdoc.version>2.8.17</springdoc.version>
     </properties>
