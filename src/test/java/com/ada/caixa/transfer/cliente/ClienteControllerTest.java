@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +27,7 @@ import com.ada.caixa.transfer.cliente.dto.ClienteRequestDTO;
 import com.ada.caixa.transfer.cliente.dto.ClienteResponseDTO;
 import com.ada.caixa.transfer.cliente.service.ClienteService;
 import com.ada.caixa.transfer.config.SecurityConfig;
+import com.ada.caixa.transfer.exception.ClienteNotFoundException;
 import com.ada.caixa.transfer.exception.DuplicateCpfException;
 import com.ada.caixa.transfer.web.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -123,5 +125,40 @@ class ClienteControllerTest {
                         .content(jsonInvalido))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @WithMockUser(username = "instructor", roles = {"INSTRUCTOR"})
+    @DisplayName("Deve retornar 200 e os dados do cliente quando o CPF existir")
+    void deveRetornar200AoConsultarClienteExistente() throws Exception {
+        ClienteResponseDTO response = new ClienteResponseDTO(
+                1L,
+                "Maria Souza",
+                "43488428095",
+                LocalDate.of(1990, 5, 15),
+                EstadoCivil.SOLTEIRO,
+                Sexo.FEMININO
+        );
+
+        when(clienteService.consultarPorCpf("43488428095")).thenReturn(response);
+
+        mockMvc.perform(get("/api/clientes/43488428095"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id_cliente").value(1))
+                .andExpect(jsonPath("$.nome").value("Maria Souza"))
+                .andExpect(jsonPath("$.cpf").value("43488428095"));
+    }
+
+    @Test
+    @WithMockUser(username = "instructor", roles = {"INSTRUCTOR"})
+    @DisplayName("Deve retornar 404 quando o CPF não estiver cadastrado")
+    void deveRetornar404AoConsultarClienteInexistente() throws Exception {
+        when(clienteService.consultarPorCpf("11111111111"))
+                .thenThrow(new ClienteNotFoundException("Cliente com CPF 11111111111 não encontrado."));
+
+        mockMvc.perform(get("/api/clientes/11111111111"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Cliente com CPF 11111111111 não encontrado."));
     }
 }

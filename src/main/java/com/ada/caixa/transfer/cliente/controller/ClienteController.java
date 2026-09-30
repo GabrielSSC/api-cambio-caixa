@@ -3,6 +3,8 @@ package com.ada.caixa.transfer.cliente.controller;
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,5 +50,16 @@ public class ClienteController {
                 .toUri();
 
         return ResponseEntity.created(location).body(response);
+    }
+
+    @Operation(summary = "UC2 · Consultar cliente por CPF")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cliente encontrado"),
+            @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
+    })
+    @GetMapping("/{cpf}")
+    public ResponseEntity<ClienteResponseDTO> consultarPorCpf(@PathVariable String cpf) {
+        ClienteResponseDTO response = clienteService.consultarPorCpf(cpf);
+        return ResponseEntity.ok(response);
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import com.ada.caixa.transfer.exception.AccountNotFoundException;
+import com.ada.caixa.transfer.exception.ClienteNotFoundException;
 import com.ada.caixa.transfer.exception.DuplicateCpfException;
 import com.ada.caixa.transfer.exception.ExternalApiUnavailableException;
 import com.ada.caixa.transfer.exception.InvalidBankException;
@@ -23,6 +24,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccountNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(AccountNotFoundException ex, WebRequest req) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(ClienteNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleClienteNotFound(ClienteNotFoundException ex, WebRequest req) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
     }
 

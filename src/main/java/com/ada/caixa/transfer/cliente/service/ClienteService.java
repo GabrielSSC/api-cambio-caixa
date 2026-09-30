@@ -7,6 +7,7 @@ import com.ada.caixa.transfer.cliente.domain.Cliente;
 import com.ada.caixa.transfer.cliente.dto.ClienteRequestDTO;
 import com.ada.caixa.transfer.cliente.dto.ClienteResponseDTO;
 import com.ada.caixa.transfer.cliente.repository.ClienteRepository;
+import com.ada.caixa.transfer.exception.ClienteNotFoundException;
 import com.ada.caixa.transfer.exception.DuplicateCpfException;
 
 @Service
@@ -43,5 +44,17 @@ public class ClienteService {
         Cliente clienteSalvo = clienteRepository.save(novoCliente);
 
         return ClienteResponseDTO.fromEntity(clienteSalvo);
+    }
+
+    /** UC2: procura pelo CPF e converte a entidade para o formato da API. */
+    @Transactional(readOnly = true)
+    public ClienteResponseDTO consultarPorCpf(String cpf) {
+        String cpfLimpo = cpf.replaceAll("\\D", "");
+
+        Cliente cliente = clienteRepository.findByCpf(cpfLimpo)
+                .orElseThrow(() -> new ClienteNotFoundException(
+                        "Cliente com CPF " + cpfLimpo + " não encontrado."));
+
+        return ClienteResponseDTO.fromEntity(cliente);
     }
 }
