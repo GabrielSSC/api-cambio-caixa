@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 /**
  * Singleton pattern: a single RestTemplate shared across the application
- * for calls to BrasilAPI (banks and rates). Spring beans are singletons by
+ * for calls to external APIs. Spring beans are singletons by
  * default — this @Bean is the single instance reused by
  * BrasilApiBankClient (see the bank package).
  */
