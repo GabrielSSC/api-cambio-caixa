@@ -16,6 +16,7 @@ import com.ada.caixa.transfer.exception.DuplicateCpfException;
 import com.ada.caixa.transfer.exception.ExternalApiUnavailableException;
 import com.ada.caixa.transfer.exception.InvalidBankException;
 import com.ada.caixa.transfer.exception.InvalidOperationException;
+import com.ada.caixa.transfer.exception.MoedaNaoSuportadaException;
 import com.ada.caixa.transfer.exception.TransferNotFoundException;
 
 /** Converts every business exception into a consistent JSON response. */
@@ -44,6 +45,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidBankException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidBank(InvalidBankException ex, WebRequest req) {
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(MoedaNaoSuportadaException.class)
+    public ResponseEntity<ApiErrorResponse> handleMoedaNaoSuportada(
+            MoedaNaoSuportadaException ex, WebRequest req) {
         return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), req);
     }
 
