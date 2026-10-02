@@ -140,6 +140,12 @@ class OrdemCompraControllerTest {
                                 .andExpect(status().isUnauthorized());
         }
 
+        @Test
+        void deveExigirAutenticacaoParaConsultarHistorico() throws Exception {
+                mockMvc.perform(get("/api/compras/cliente/43488428095"))
+                                .andExpect(status().isUnauthorized());
+        }
+
         private Cliente salvarCliente() {
                 return clienteRepository.save(new Cliente(
                                 "Maria Souza", "43488428095", LocalDate.of(1990, 5, 15),
