@@ -27,6 +27,7 @@ import com.ada.caixa.transfer.cliente.domain.Cliente;
 import com.ada.caixa.transfer.cliente.domain.EstadoCivil;
 import com.ada.caixa.transfer.cliente.domain.Sexo;
 import com.ada.caixa.transfer.cliente.repository.ClienteRepository;
+import com.ada.caixa.transfer.compra.domain.OrdemCompra;
 import com.ada.caixa.transfer.compra.repository.OrdemCompraRepository;
 
 @SpringBootTest
