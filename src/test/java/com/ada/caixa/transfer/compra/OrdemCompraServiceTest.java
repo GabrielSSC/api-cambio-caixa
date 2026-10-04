@@ -2,8 +2,11 @@ package com.ada.caixa.transfer.compra;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,6 +27,7 @@ import com.ada.caixa.transfer.compra.dto.OrdemCompraRequestDTO;
 import com.ada.caixa.transfer.compra.dto.OrdemCompraResponseDTO;
 import com.ada.caixa.transfer.compra.repository.OrdemCompraRepository;
 import com.ada.caixa.transfer.compra.service.OrdemCompraService;
+import com.ada.caixa.transfer.exception.OrdemCompraNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class OrdemCompraServiceTest {
@@ -66,5 +70,39 @@ class OrdemCompraServiceTest {
         verify(clienteService).consultarPorCpf("43488428095");
         verify(cotacaoService).consultar("EUR");
         verify(ordemCompraRepository).save(any(OrdemCompra.class));
+    }
+
+    @Test
+    void deveConsultarOrdemDeCompraPorId() {
+        OrdemCompra ordemCompra = new OrdemCompra(
+                1L,
+                "43488428095",
+                LocalDateTime.of(2026, 9, 2, 10, 0),
+                "EUR",
+                new BigDecimal("50.00"),
+                new BigDecimal("5.200000"),
+                new BigDecimal("260.00"),
+                "7057");
+        ordemCompra.setId(10L);
+        when(ordemCompraRepository.findById(10L)).thenReturn(Optional.of(ordemCompra));
+
+        OrdemCompraResponseDTO resposta = ordemCompraService.consultarPorId(10L);
+
+        assertEquals(10L, resposta.idCompra());
+        assertEquals("EUR", resposta.tipoMoeda());
+        assertEquals(new BigDecimal("260.00"), resposta.valorTotalOperacao());
+        verify(ordemCompraRepository).findById(10L);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoOrdemDeCompraNaoExistir() {
+        when(ordemCompraRepository.findById(10L)).thenReturn(Optional.empty());
+
+        OrdemCompraNotFoundException exception = assertThrows(
+                OrdemCompraNotFoundException.class,
+                () -> ordemCompraService.consultarPorId(10L));
+
+        assertEquals("Ordem de compra com ID 10 não encontrada.", exception.getMessage());
+        verify(ordemCompraRepository).findById(10L);
     }
 }

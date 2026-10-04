@@ -17,6 +17,7 @@ import com.ada.caixa.transfer.exception.ExternalApiUnavailableException;
 import com.ada.caixa.transfer.exception.InvalidBankException;
 import com.ada.caixa.transfer.exception.InvalidOperationException;
 import com.ada.caixa.transfer.exception.MoedaNaoSuportadaException;
+import com.ada.caixa.transfer.exception.OrdemCompraNotFoundException;
 import com.ada.caixa.transfer.exception.TransferNotFoundException;
 
 /** Converts every business exception into a consistent JSON response. */
@@ -35,6 +36,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TransferNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleTransferNotFound(TransferNotFoundException ex, WebRequest req) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(OrdemCompraNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleOrdemCompraNotFound(
+            OrdemCompraNotFoundException ex, WebRequest req) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
     }
 
