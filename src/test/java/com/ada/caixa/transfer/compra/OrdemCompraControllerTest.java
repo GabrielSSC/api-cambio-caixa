@@ -82,6 +82,30 @@ class OrdemCompraControllerTest {
 
         @Test
         @WithMockUser
+        void deveConsultarOrdemDeCompraPorId() throws Exception {
+                OrdemCompra compra = salvarOrdem("EUR", LocalDateTime.of(2026, 9, 2, 10, 0));
+
+                mockMvc.perform(get("/api/compras/{id}", compra.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id_compra").value(compra.getId()))
+                                .andExpect(jsonPath("$.id_cliente").value(1))
+                                .andExpect(jsonPath("$.cpf_cliente").value("43488428095"))
+                                .andExpect(jsonPath("$.tipo_moeda").value("EUR"))
+                                .andExpect(jsonPath("$.valor_total_operacao").value(260.00))
+                                .andExpect(jsonPath("$.numero_agencia_retirada").value("7057"));
+        }
+
+        @Test
+        @WithMockUser
+        void deveResponder404QuandoOrdemDeCompraNaoExistir() throws Exception {
+                mockMvc.perform(get("/api/compras/999999"))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.message")
+                                                .value("Ordem de compra com ID 999999 não encontrada."));
+        }
+
+        @Test
+        @WithMockUser
         void deveConsultarHistoricoDoClienteOrdenadoDoMaisNovoParaOMaisAntigo() throws Exception {
                 salvarCliente();
                 OrdemCompra compraAntiga = salvarOrdem("USD", LocalDateTime.of(2026, 9, 1, 10, 0));
@@ -143,6 +167,12 @@ class OrdemCompraControllerTest {
         @Test
         void deveExigirAutenticacaoParaConsultarHistorico() throws Exception {
                 mockMvc.perform(get("/api/compras/cliente/43488428095"))
+                                .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void deveExigirAutenticacaoParaConsultarOrdemPorId() throws Exception {
+                mockMvc.perform(get("/api/compras/1"))
                                 .andExpect(status().isUnauthorized());
         }
 

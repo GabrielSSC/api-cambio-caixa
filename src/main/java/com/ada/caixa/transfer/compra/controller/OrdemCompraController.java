@@ -45,6 +45,16 @@ public class OrdemCompraController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(summary = "Consultar ordem de compra por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ordem de compra encontrada"),
+            @ApiResponse(responseCode = "404", description = "Ordem de compra não encontrada")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<OrdemCompraResponseDTO> consultarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(ordemCompraService.consultarPorId(id));
+    }
+
     @Operation(summary = "UC5 · Consultar histórico de compras por CPF")
     @ApiResponse(responseCode = "200", description = "Histórico encontrado ou lista vazia")
     @GetMapping("/cliente/{cpf}")

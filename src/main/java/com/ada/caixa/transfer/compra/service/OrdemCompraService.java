@@ -15,6 +15,7 @@ import com.ada.caixa.transfer.compra.domain.OrdemCompra;
 import com.ada.caixa.transfer.compra.dto.OrdemCompraRequestDTO;
 import com.ada.caixa.transfer.compra.dto.OrdemCompraResponseDTO;
 import com.ada.caixa.transfer.compra.repository.OrdemCompraRepository;
+import com.ada.caixa.transfer.exception.OrdemCompraNotFoundException;
 
 @Service
 public class OrdemCompraService {
@@ -50,6 +51,15 @@ public class OrdemCompraService {
         );
 
         return OrdemCompraResponseDTO.fromEntity(ordemCompraRepository.save(ordemCompra));
+    }
+
+    @Transactional(readOnly = true)
+    public OrdemCompraResponseDTO consultarPorId(Long id) {
+        OrdemCompra ordemCompra = ordemCompraRepository.findById(id)
+                .orElseThrow(() -> new OrdemCompraNotFoundException(
+                        "Ordem de compra com ID " + id + " não encontrada."));
+
+        return OrdemCompraResponseDTO.fromEntity(ordemCompra);
     }
 
     @Transactional(readOnly = true)
