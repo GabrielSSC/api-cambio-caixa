@@ -4,6 +4,13 @@ Instructor's sample project — demonstrates in code everything the module
 asks of the students' final project, in a distinct domain (account /
 transfer, instead of foreign currency purchase).
 
+## Prerequisites
+
+Use JDK 25 (the latest LTS release) to build and run the application. The
+Maven build targets Java 25; set `JAVA_HOME` to a JDK 25 installation and
+ensure its `bin` directory is on `PATH` so Maven and the application use
+the same runtime.
+
 ## Database
 
 PostgreSQL, started via Docker Compose, schema and seed data managed by
