@@ -37,6 +37,7 @@ out/
 Thumbs.db
 .DS_Store
 Desktop.ini
+.github/modernize/
 
 # Course specifications
 apicambioespecificacao.md
