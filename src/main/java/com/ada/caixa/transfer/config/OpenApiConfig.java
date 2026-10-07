@@ -17,9 +17,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "Transfer API",
+                title = "API de Câmbio e Compras",
                 version = "v1",
-                description = "Instructor's sample project: scheduled bank transfers (Adapter, Strategy, Facade)."
+                description = "API para cadastro e consulta de clientes, consulta de cotações de câmbio e registro e consulta de ordens de compra de moeda."
         ),
         security = @SecurityRequirement(name = "basicAuth")
 )

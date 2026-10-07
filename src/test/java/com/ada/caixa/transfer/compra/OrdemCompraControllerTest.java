@@ -30,7 +30,7 @@ import com.ada.caixa.transfer.cliente.repository.ClienteRepository;
 import com.ada.caixa.transfer.compra.domain.OrdemCompra;
 import com.ada.caixa.transfer.compra.repository.OrdemCompraRepository;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.security.password=${random.uuid}")
 @AutoConfigureMockMvc
 class OrdemCompraControllerTest {
 

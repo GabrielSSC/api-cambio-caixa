@@ -1,5 +1,6 @@
 package com.ada.caixa.transfer.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -30,9 +31,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+    public UserDetailsService userDetailsService(
+            PasswordEncoder encoder,
+            @Value("${app.security.password}") String password) {
         UserDetails instructor = User.withUsername("instructor")
-                .password(encoder.encode("training2026"))
+                .password(encoder.encode(password))
                 .roles("INSTRUCTOR")
                 .build();
         return new InMemoryUserDetailsManager(instructor);
