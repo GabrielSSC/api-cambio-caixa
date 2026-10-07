@@ -22,11 +22,14 @@ Confirme que `java -version` e `mvn -version` apontam para o JDK 25.
 
 ## Executar
 
-Na raiz do projeto:
+Na raiz do projeto, defina a senha da API como variável de ambiente e inicie a aplicação:
 
-```bash
+```powershell
+$env:APP_SECURITY_PASSWORD = Read-Host "Defina a senha da API"
 mvn spring-boot:run
 ```
+
+Em Bash, use `export APP_SECURITY_PASSWORD='sua-senha'` antes de executar `mvn spring-boot:run`. A variável precisa estar definida no mesmo terminal em que a aplicação é iniciada. A aplicação não inicia se ela estiver ausente.
 
 A API inicia em `http://localhost:8081`. Por padrão, usa um banco H2 em memória; o Flyway cria o esquema na inicialização e os dados são perdidos quando a aplicação é encerrada.
 
@@ -37,16 +40,18 @@ As configurações atuais estão em `src/main/resources/application.properties`.
 Os endpoints de negócio exigem HTTP Basic:
 
 - Usuário: `instructor`
-- Senha: `training2026`
+- Senha: valor definido em `APP_SECURITY_PASSWORD` no ambiente
 
-Essas credenciais são definidas em `SecurityConfig` para fins didáticos. Não devem ser usadas em produção. A documentação Swagger e o JSON OpenAPI são públicos; as chamadas de negócio feitas pela interface Swagger continuam exigindo autenticação.
+O segredo não fica no código nem em `application.properties`: é fornecido pelo ambiente na inicialização e codificado com BCrypt antes de ser usado pelo Spring Security. Essa escolha mantém credenciais fora do repositório e facilita configurar valores diferentes por ambiente. Para apresentar o projeto, explique que a senha deve ser definida no terminal antes de iniciar a aplicação. Não reutilize credenciais reais ou de produção. A documentação Swagger e o JSON OpenAPI são públicos; as chamadas de negócio feitas pela interface Swagger continuam exigindo autenticação.
+
+Se uma credencial já tiver sido versionada, removê-la do código não apaga o histórico do Git; troque-a e configure um novo valor no ambiente.
 
 ## Documentação da API
 
 - Swagger UI: `http://localhost:8081/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8081/v3/api-docs`
 
-Na interface Swagger, use **Authorize** e informe as credenciais acima para testar os endpoints.
+Na interface Swagger, use **Authorize** e informe o usuário `instructor` e a senha configurada no ambiente para testar os endpoints.
 
 ## Endpoints
 
@@ -64,7 +69,7 @@ Na interface Swagger, use **Authorize** e informe as credenciais acima para test
 O CPF pode ser informado com ou sem pontuação. `estadoCivil` e `sexo` devem usar os valores dos enums.
 
 ```bash
-curl -u instructor:training2026 -X POST http://localhost:8081/api/clientes \
+curl -u "instructor:${APP_SECURITY_PASSWORD}" -X POST http://localhost:8081/api/clientes \
   -H "Content-Type: application/json" \
   -d '{"nome":"Maria Souza","cpf":"43488428095","dataNascimento":"1990-05-15","estadoCivil":"SOLTEIRO","sexo":"FEMININO"}'
 ```
@@ -72,7 +77,7 @@ curl -u instructor:training2026 -X POST http://localhost:8081/api/clientes \
 ### Consultar cotação
 
 ```bash
-curl -u instructor:training2026 \
+curl -u "instructor:${APP_SECURITY_PASSWORD}" \
   http://localhost:8081/api/cambio/cotacao/USD
 ```
 
@@ -83,7 +88,7 @@ Use `EUR` no lugar de `USD` para consultar o euro. Moedas diferentes de USD e EU
 Cadastre o cliente antes de registrar uma ordem. O CPF deve conter 11 dígitos e o número da agência, quatro dígitos.
 
 ```bash
-curl -u instructor:training2026 -X POST http://localhost:8081/api/compras \
+curl -u "instructor:${APP_SECURITY_PASSWORD}" -X POST http://localhost:8081/api/compras \
   -H "Content-Type: application/json" \
   -d '{"cpf":"43488428095","tipoMoeda":"EUR","valorMoedaEstrangeira":100.00,"numeroAgenciaRetirada":"7057"}'
 ```
