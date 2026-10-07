@@ -1,132 +1,110 @@
-# Scheduled Bank Transfer
+# API de Câmbio USD/EUR
 
-Instructor's sample project — demonstrates in code everything the module
-asks of the students' final project, in a distinct domain (account /
-transfer, instead of foreign currency purchase).
+API REST para cadastro de clientes, consulta de cotações de dólar e euro e registro de ordens de compra de moeda estrangeira para retirada em agência.
 
-## Prerequisites
+## Tecnologias
 
-Use JDK 25 (the latest LTS release) to build and run the application. The
-Maven build targets Java 25; set `JAVA_HOME` to a JDK 25 installation and
-ensure its `bin` directory is on `PATH` so Maven and the application use
-the same runtime.
+- Java 25
+- Spring Boot 3.5
+- Spring Web, Validation, Security e Data JPA
+- H2 em memória como banco padrão
+- Flyway para versionamento do esquema
+- AwesomeAPI para consulta de cotações
+- JUnit, Mockito e Spring Boot Test
 
-## Database
+## Pré-requisitos
 
-PostgreSQL, started via Docker Compose, schema and seed data managed by
-Flyway.
+- JDK 25
+- Maven 3.9 ou compatível
+- Acesso à internet para consultar a AwesomeAPI
 
-```bash
-docker compose up -d
-```
+Confirme que `java -version` e `mvn -version` apontam para o JDK 25.
 
-This starts Postgres on `localhost:5432` (db `transfer`, user/password
-`transfer`/`transfer`, data persisted in the `transfer_pgdata` volume).
-No manual setup beyond that — on the next step, Flyway creates the
-`accounts` and `transfers` tables and inserts two seed accounts plus one
-seed transfer (see `src/main/resources/db/migration`).
+## Executar
 
-**No Docker?** Run against an in-memory H2 database instead, with the
-`h2` profile — same Flyway migrations, no setup at all:
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=h2
-```
-
-H2 console at `http://localhost:8080/h2-console` (JDBC URL
-`jdbc:h2:mem:transfer`, user `sa`, empty password). The database resets
-every time the app restarts.
-
-## Running
-
-With Postgres up (or using the `h2` profile above):
+Na raiz do projeto:
 
 ```bash
 mvn spring-boot:run
 ```
 
-The API comes up on `http://localhost:8080`. Every business endpoint
-requires HTTP Basic authentication:
+A API inicia em `http://localhost:8081`. Por padrão, usa um banco H2 em memória; o Flyway cria o esquema na inicialização e os dados são perdidos quando a aplicação é encerrada.
 
-- username: `instructor`
-- password: `training2026`
+As configurações atuais estão em `src/main/resources/application.properties`. O arquivo `docker-compose.yml` disponibiliza um PostgreSQL, mas a aplicação está configurada para usar H2 por padrão.
 
-## API docs (Swagger)
+## Autenticação
 
-Swagger UI: `http://localhost:8080/swagger-ui.html`
-Raw OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+Os endpoints de negócio exigem HTTP Basic:
 
-Both are public — the one deliberate exception to "every endpoint
-requires auth" (see `SecurityConfig`), so anyone can read the contract
-without credentials. Actually calling an endpoint from the page still
-needs them: use the **Authorize** button (top right) to enter
-`instructor` / `training2026` once, then every "Try it out" request
-carries them automatically.
+- Usuário: `instructor`
+- Senha: `training2026`
 
-## Running the tests
+Essas credenciais são definidas em `SecurityConfig` para fins didáticos. Não devem ser usadas em produção. A documentação Swagger e o JSON OpenAPI são públicos; as chamadas de negócio feitas pela interface Swagger continuam exigindo autenticação.
 
-This environment's `~/.m2/settings.xml` has `maven.test.skip=true` as an
-active profile property — pass the override explicitly:
+## Documentação da API
 
-```bash
-mvn -o test -Dmaven.test.skip=false
-```
+- Swagger UI: `http://localhost:8081/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8081/v3/api-docs`
 
-(`-o` = offline, uses only what is already in the local `.m2`.)
+Na interface Swagger, use **Authorize** e informe as credenciais acima para testar os endpoints.
 
 ## Endpoints
 
-| Method | Endpoint | UC |
-|---|---|---|
-| `POST` | `/api/accounts` | UC1 — create account |
-| `GET` | `/api/accounts/{cpf}` | UC2 — look up account + transfer history |
-| `POST` | `/api/transfers` | UC3 — schedule a transfer |
-| `DELETE` | `/api/transfers/{id}?customerCpf=...` | UC4 — cancel a scheduled transfer |
+| Método | Endpoint | Descrição | Respostas principais |
+|---|---|---|---|
+| `POST` | `/api/clientes` | Cadastra um cliente (UC1) | `201`, `400`, `409` |
+| `GET` | `/api/clientes/{cpf}` | Consulta cliente por CPF (UC2) | `200`, `404` |
+| `GET` | `/api/cambio/cotacao/{moeda}` | Consulta cotação de `USD` ou `EUR` (UC3) | `200`, `422`, `503` |
+| `POST` | `/api/compras` | Registra uma ordem de compra (UC4) | `201`, `400`, `404`, `422`, `503` |
+| `GET` | `/api/compras/{id}` | Consulta uma ordem pelo identificador | `200`, `404` |
+| `GET` | `/api/compras/cliente/{cpf}` | Consulta o histórico do cliente (UC5) | `200` |
 
-### Example — UC1
+### Cadastrar cliente
+
+O CPF pode ser informado com ou sem pontuação. `estadoCivil` e `sexo` devem usar os valores dos enums.
 
 ```bash
-curl -u instructor:training2026 -X POST http://localhost:8080/api/accounts \
+curl -u instructor:training2026 -X POST http://localhost:8081/api/clientes \
   -H "Content-Type: application/json" \
-  -d '{"customerName":"Maria Souza","cpf":"43488428095","bankCode":1,"branch":"0001","accountNumber":"12345-6"}'
+  -d '{"nome":"Maria Souza","cpf":"43488428095","dataNascimento":"1990-05-15","estadoCivil":"SOLTEIRO","sexo":"FEMININO"}'
 ```
 
-### Example — UC3 (uses the `accountId` returned above)
+### Consultar cotação
 
 ```bash
-curl -u instructor:training2026 -X POST http://localhost:8080/api/transfers \
+curl -u instructor:training2026 \
+  http://localhost:8081/api/cambio/cotacao/USD
+```
+
+Use `EUR` no lugar de `USD` para consultar o euro. Moedas diferentes de USD e EUR retornam `422`; indisponibilidade da API externa retorna `503`.
+
+### Registrar ordem de compra
+
+Cadastre o cliente antes de registrar uma ordem. O CPF deve conter 11 dígitos e o número da agência, quatro dígitos.
+
+```bash
+curl -u instructor:training2026 -X POST http://localhost:8081/api/compras \
   -H "Content-Type: application/json" \
-  -d '{"customerCpf":"43488428095","sourceAccountId":1,"destinationBank":341,"destinationBranch":"1234","destinationAccount":"56789-0","amount":1000.00,"scheduledDate":"2026-09-20"}'
+  -d '{"cpf":"43488428095","tipoMoeda":"EUR","valorMoedaEstrangeira":100.00,"numeroAgenciaRetirada":"7057"}'
 ```
 
-Bank 1 = Bank of Brazil (same bank as the example customer → fee-free).
-Switch `destinationBank` to `341` (Itau) to see the TED fee being
-calculated against the current SELIC rate.
+A resposta `201 Created` inclui os identificadores do cliente e da compra, a cotação consultada e o valor total calculado.
 
-### Example — UC4 (uses the `transferId` returned by UC3)
+## Testes
 
 ```bash
-curl -u instructor:training2026 -X DELETE \
-  "http://localhost:8080/api/transfers/1?customerCpf=43488428095"
+mvn test -Dmaven.test.skip=false
 ```
 
-Only the customer who owns the transfer can cancel it, and only before
-its `scheduledDate` arrives — both checked in `TransferService.cancel(...)`.
+## Organização e decisões técnicas
 
-## Where each module concept lives
+A aplicação é um monólito modular, organizado por responsabilidade:
 
-| Concept | Where |
-|---|---|
-| Automated tests (pyramid) | `src/test` — pure unit tests (`fee/`), Mockito unit test (`TransferServiceTest`), web+security slice (`TransferControllerSecurityTest`) |
-| Architecture | Modular monolith by package (`account`, `transfer`, `bank`, `fee`) |
-| Persistence | Spring Data JPA + PostgreSQL; `AccountRepository`/`TransferRepository` are plain `JpaRepository` interfaces — the query methods are derived from their names, no implementation code |
-| Schema & seed data | Flyway, `src/main/resources/db/migration` — `V1`/`V2` create the tables, `V3` inserts two accounts and one transfer |
-| SOLID | `TransferService`/`AccountService` depend on `BankClient` (an interface), not the concrete implementation — Dependency Inversion; constructor injection everywhere |
-| Clean Code | Consistent domain names, short methods, named business exceptions |
-| **Adapter** | `bank/BrasilApiBankClient` — the only place that knows BrasilAPI's JSON shape |
-| **Strategy** | `fee/SameBankFeeStrategy` and `fee/TedFeeStrategy` — fee calculation varies by transfer type |
-| **Facade** | `transfer/TransferService.schedule(...)` — hides the orchestration of account + bank + fee |
-| **Singleton** | `config/RestClientConfig` — a single shared `RestTemplate` |
-| External integration | `brasilapi.com.br/api/banks/v1/{code}` and `/api/taxas/v1/SELIC`, no API key needed |
-| Authentication | `config/SecurityConfig` — HTTP Basic, every endpoint protected |
-| Error handling | `web/GlobalExceptionHandler` — 404/409/422/503/400 depending on the exception |
+- `cliente`: cadastro, consulta e persistência de clientes.
+- `cambio`: integração com a AwesomeAPI e consulta de cotação.
+- `compra`: registro, consulta e histórico de ordens.
+- `config`, `exception` e `web`: configurações transversais, exceções de negócio e respostas de erro.
+
+O fluxo de compra é orquestrado por `OrdemCompraService`: consulta o cliente, obtém a cotação, calcula o total e persiste a ordem. A integração externa é isolada em `AwesomeApiClient`, que adapta a resposta da AwesomeAPI ao modelo interno da aplicação. Os serviços recebem suas dependências por construtor.
+
+O esquema do banco é gerenciado pelas migrations em `src/main/resources/db/migration`. As exceções de negócio são convertidas em respostas HTTP consistentes por `GlobalExceptionHandler`.

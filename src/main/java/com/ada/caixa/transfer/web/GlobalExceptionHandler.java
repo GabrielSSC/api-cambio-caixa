@@ -10,32 +10,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import com.ada.caixa.transfer.exception.AccountNotFoundException;
 import com.ada.caixa.transfer.exception.ClienteNotFoundException;
 import com.ada.caixa.transfer.exception.DuplicateCpfException;
 import com.ada.caixa.transfer.exception.ExternalApiUnavailableException;
-import com.ada.caixa.transfer.exception.InvalidBankException;
 import com.ada.caixa.transfer.exception.InvalidOperationException;
 import com.ada.caixa.transfer.exception.MoedaNaoSuportadaException;
 import com.ada.caixa.transfer.exception.OrdemCompraNotFoundException;
-import com.ada.caixa.transfer.exception.TransferNotFoundException;
 
 /** Converts every business exception into a consistent JSON response. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(AccountNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleNotFound(AccountNotFoundException ex, WebRequest req) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
-    }
-
     @ExceptionHandler(ClienteNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleClienteNotFound(ClienteNotFoundException ex, WebRequest req) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
-    }
-
-    @ExceptionHandler(TransferNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleTransferNotFound(TransferNotFoundException ex, WebRequest req) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
     }
 
@@ -48,11 +35,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateCpfException.class)
     public ResponseEntity<ApiErrorResponse> handleConflict(DuplicateCpfException ex, WebRequest req) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), req);
-    }
-
-    @ExceptionHandler(InvalidBankException.class)
-    public ResponseEntity<ApiErrorResponse> handleInvalidBank(InvalidBankException ex, WebRequest req) {
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), req);
     }
 
     @ExceptionHandler(MoedaNaoSuportadaException.class)
