@@ -13,7 +13,6 @@ import org.springframework.web.context.request.WebRequest;
 import com.ada.caixa.transfer.exception.ClienteNotFoundException;
 import com.ada.caixa.transfer.exception.DuplicateCpfException;
 import com.ada.caixa.transfer.exception.ExternalApiUnavailableException;
-import com.ada.caixa.transfer.exception.InvalidOperationException;
 import com.ada.caixa.transfer.exception.MoedaNaoSuportadaException;
 import com.ada.caixa.transfer.exception.OrdemCompraNotFoundException;
 
@@ -46,11 +45,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ExternalApiUnavailableException.class)
     public ResponseEntity<ApiErrorResponse> handleExternalApi(ExternalApiUnavailableException ex, WebRequest req) {
         return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), req);
-    }
-
-    @ExceptionHandler(InvalidOperationException.class)
-    public ResponseEntity<ApiErrorResponse> handleInvalidOperation(InvalidOperationException ex, WebRequest req) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
