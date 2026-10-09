@@ -1,6 +1,6 @@
 package com.ada.caixa.transfer.exception;
 
-/** Failure or timeout while calling BrasilAPI. Mapped to 503. */
+/** Falha ou timeout ao consultar a API externa. Mapeada para 503. */
 public class ExternalApiUnavailableException extends RuntimeException {
     public ExternalApiUnavailableException(String message) {
         super(message);

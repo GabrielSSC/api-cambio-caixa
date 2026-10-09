@@ -18,7 +18,7 @@
     <description>Instructor's sample project: scheduled bank transfers (Adapter, Strategy, Facade)</description>
 
     <properties>
-        <java.version>25</java.version>
+        <java.version>22</java.version>
         <!-- Overridden to match what is cached in this environment's local .m2
              (Boot 3.3.4 manages flyway 10.10.0 / postgresql 42.7.4, neither cached here). -->
         <flyway.version>11.7.2</flyway.version>

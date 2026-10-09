@@ -8,10 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Singleton pattern: a single RestTemplate shared across the application
- * for calls to external APIs. Spring beans are singletons by
- * default — this @Bean is the single instance reused by
- * BrasilApiBankClient (see the bank package).
+ * Configuração central do RestTemplate para chamadas a APIs externas.
+ * O Spring já gerencia beans como singletons, então esta instância
+ * compartilhada evita criação redundante de clientes HTTP.
  */
 @Configuration
 public class RestClientConfig {
