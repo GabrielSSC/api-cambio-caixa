@@ -101,15 +101,31 @@ A resposta `201 Created` inclui os identificadores do cliente e da compra, a cot
 mvn test -Dmaven.test.skip=false
 ```
 
-## Organização e decisões técnicas
+## Organização e decisões de arquitetura
 
-A aplicação é um monólito modular, organizado por responsabilidade:
+A aplicação foi estruturada como um **monólito modular**: é uma única aplicação Spring Boot, construída e executada como uma unidade, mas organizada em módulos que representam responsabilidades do domínio:
 
 - `cliente`: cadastro, consulta e persistência de clientes.
-- `cambio`: integração com a AwesomeAPI e consulta de cotação.
+- `cambio`: consulta de cotações e integração com a AwesomeAPI.
 - `compra`: registro, consulta e histórico de ordens.
 - `config`, `exception` e `web`: configurações transversais, exceções de negócio e respostas de erro.
 
-O fluxo de compra é orquestrado por `OrdemCompraService`: consulta o cliente, obtém a cotação, calcula o total e persiste a ordem. A integração externa é isolada em `AwesomeApiClient`, que adapta a resposta da AwesomeAPI ao modelo interno da aplicação. Os serviços recebem suas dependências por construtor.
+Essa abordagem mantém a implantação e a execução simples para o escopo do projeto, sem introduzir a sobrecarga operacional de microsserviços, como comunicação remota entre serviços e implantação independente. Ao mesmo tempo, os limites por domínio deixam as responsabilidades mais claras e facilitam testes e manutenção. Se requisitos futuros justificarem escalabilidade ou implantação independente, um módulo poderá ser extraído com mais clareza, sem assumir desde já os custos de uma arquitetura distribuída.
 
-O esquema do banco é gerenciado pelas migrations em `src/main/resources/db/migration`. As exceções de negócio são convertidas em respostas HTTP consistentes por `GlobalExceptionHandler`.
+## Padrões de projeto
+
+### Adapter
+
+O padrão **Adapter** isola o formato e o protocolo da API externa da AwesomeAPI do modelo interno da aplicação. `AwesomeApiClient` obtém a resposta HTTP/JSON e a converte para o objeto de domínio `Cotacao`; o restante do sistema não precisa conhecer o formato JSON da AwesomeAPI.
+
+O cliente implementa a interface `CotacaoClient`, da qual `CotacaoService` depende por construtor. Assim, a lógica de cotação depende de uma abstração, e não do adaptador concreto. Isso facilita substituir ou simular a integração externa em testes sem alterar o serviço.
+
+### Facade no fluxo de compra
+
+`OrdemCompraService` atua como ponto de orquestração do caso de uso de compra: consulta o cliente, obtém a cotação, calcula o valor total e persiste a ordem. O controller pode acionar esse fluxo por uma operação de serviço, sem coordenar diretamente os componentes envolvidos.
+
+Os serviços recebem suas dependências por construtor. O esquema do banco é gerenciado pelas migrations em `src/main/resources/db/migration`, e as exceções de negócio são convertidas em respostas HTTP consistentes por `GlobalExceptionHandler`.
+
+## Evidência do quadro Kanban
+
+- [Board do projeto](https://github.com/users/GabrielSSC/projects/3)

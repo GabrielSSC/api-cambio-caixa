@@ -11,7 +11,7 @@ import com.ada.caixa.transfer.exception.ExternalApiUnavailableException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
-public class AwesomeApiClient {
+public class AwesomeApiClient implements CotacaoClient {
 
     private static final String URL = "https://economia.awesomeapi.com.br/json/last/{par}";
     private static final String ERRO_API =
@@ -23,6 +23,7 @@ public class AwesomeApiClient {
         this.restTemplate = restTemplate;
     }
 
+    @Override
     public Cotacao consultar(String moeda) {
         try {
             String par = moeda + "-BRL";

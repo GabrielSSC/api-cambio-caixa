@@ -21,7 +21,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-import com.ada.caixa.transfer.cambio.client.AwesomeApiClient;
+import com.ada.caixa.transfer.cambio.client.CotacaoClient;
 import com.ada.caixa.transfer.cambio.domain.Cotacao;
 import com.ada.caixa.transfer.cliente.domain.Cliente;
 import com.ada.caixa.transfer.cliente.domain.EstadoCivil;
@@ -44,7 +44,7 @@ class OrdemCompraControllerTest {
     private OrdemCompraRepository ordemCompraRepository;
 
     @MockitoBean
-    private AwesomeApiClient awesomeApiClient;
+    private CotacaoClient cotacaoClient;
 
         @BeforeEach
         void limparDados() {
@@ -56,7 +56,7 @@ class OrdemCompraControllerTest {
     @WithMockUser
     void deveRegistrarCompraAutenticadaPersistirEResponder201() throws Exception {
                 Cliente cliente = salvarCliente();
-        when(awesomeApiClient.consultar("EUR"))
+        when(cotacaoClient.consultar("EUR"))
                 .thenReturn(new Cotacao("EUR", "BRL", new BigDecimal("6.5857")));
 
         mockMvc.perform(post("/api/compras")

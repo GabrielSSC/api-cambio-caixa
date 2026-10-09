@@ -14,7 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.ada.caixa.transfer.cambio.client.AwesomeApiClient;
+import com.ada.caixa.transfer.cambio.client.CotacaoClient;
 import com.ada.caixa.transfer.cambio.domain.Cotacao;
 import com.ada.caixa.transfer.cambio.dto.CotacaoResponseDTO;
 import com.ada.caixa.transfer.exception.MoedaNaoSuportadaException;
@@ -23,14 +23,14 @@ import com.ada.caixa.transfer.exception.MoedaNaoSuportadaException;
 class CotacaoServiceTest {
 
     @Mock
-    private AwesomeApiClient awesomeApiClient;
+    private CotacaoClient cotacaoClient;
 
     @InjectMocks
     private CotacaoService cotacaoService;
 
     @Test
     void deveConsultarCotacaoDeMoedaSuportada() {
-        when(awesomeApiClient.consultar("USD"))
+        when(cotacaoClient.consultar("USD"))
                 .thenReturn(new Cotacao("USD", "BRL", new BigDecimal("5.2235")));
 
         CotacaoResponseDTO resposta = cotacaoService.consultar("usd");
@@ -39,7 +39,7 @@ class CotacaoServiceTest {
         assertEquals("BRL", resposta.moedaBase());
         assertEquals(new BigDecimal("5.2235"), resposta.valorCotacao());
         assertNotNull(resposta.consultadoEm());
-        verify(awesomeApiClient).consultar("USD");
+        verify(cotacaoClient).consultar("USD");
     }
 
     @Test
@@ -47,6 +47,6 @@ class CotacaoServiceTest {
         assertThrows(MoedaNaoSuportadaException.class,
                 () -> cotacaoService.consultar("GBP"));
 
-        verifyNoInteractions(awesomeApiClient);
+        verifyNoInteractions(cotacaoClient);
     }
 }
