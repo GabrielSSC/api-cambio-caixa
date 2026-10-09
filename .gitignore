@@ -38,7 +38,7 @@ Thumbs.db
 .DS_Store
 Desktop.ini
 .github/modernize/
-
+apache-maven-*
 # Course specifications
 apicambioespecificacao.md
 
